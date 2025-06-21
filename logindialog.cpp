@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QString>
+#include "forgotpassword.h"
 #include "ui_logindialog.h"
 #include "user.h"
 loginDialog::loginDialog(QWidget *parent)
@@ -30,6 +31,8 @@ void loginDialog::on_approve_clicked()
         User u(username, password);
         in >> u;
         if (u.getUsername() == username && u.getPassword() == password) {
+            //fix this later
+            f.close();
             return;
         }
     }
@@ -38,4 +41,10 @@ void loginDialog::on_approve_clicked()
         "Error",
         "Your username or password is wrong if you forget your password click on forget password!");
     return;
+}
+
+void loginDialog::on_forgotPassword_clicked()
+{
+    forgotPassword fp(this);
+    fp.show();
 }

@@ -18,6 +18,10 @@ public:
 private slots:
 
 
+    void on_approve_clicked();
+
+    void on_forgotPassword_clicked();
+
 private:
     Ui::loginDialog *ui;
 };

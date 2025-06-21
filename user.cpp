@@ -63,3 +63,21 @@ User::User(QString username, QString password)
     username = this->username;
     password = this->password;
 }
+QString User::getPassword()
+{
+    return password;
+}
+QString User::getUsername()
+{
+    return username;
+}
+
+QString User::getPhone()
+{
+    return phone;
+}
+
+void User::setPassword(QString password)
+{
+    this->password = password;
+}

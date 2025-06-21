@@ -28,6 +28,7 @@ public:
     static int getUserCount();
     QString getPassword();
     QString getUsername();
+    QString getPhone();
 };
 
 #endif // USER_H
