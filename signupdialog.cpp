@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include "ui_signupdialog.h"
 #include "user.h"
+#include <mainwindow.h>
 signupDialog::signupDialog(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::signupDialog)
@@ -76,6 +77,7 @@ void signupDialog::on_approve_clicked()
                ui->gmail->text(),
                ui->username->text(),
                ui->password->text());
+        QByteArray block;
         QFile f("users.txt");
         if (!f.open(QIODevice::Append | QIODevice::Text)) {
             QMessageBox::warning(this, "Error", "The file can not be opened!");
@@ -83,6 +85,10 @@ void signupDialog::on_approve_clicked()
         }
         QTextStream out(&f);
         out << u;
+        block.append(f.readAll());
+        MainWindow m;
+        m.getSocket1()->write(block);
+        m.getSocket2()->write(block);
         f.flush();
         f.close();
         return;
@@ -98,6 +104,7 @@ void signupDialog::on_approve_clicked()
            ui->gmail->text(),
            ui->username->text(),
            ui->password->text());
+    QByteArray block;
     QFile f("users.txt");
     if (!f.open(QIODevice::Append | QIODevice::Text)) {
         QMessageBox::warning(this, "Error", "The file can not be opened!");
@@ -105,6 +112,10 @@ void signupDialog::on_approve_clicked()
     }
     QTextStream out(&f);
     out << u;
+    block.append(f.readAll());
+    MainWindow m;
+    m.getSocket1()->write(block);
+    m.getSocket2()->write(block);
     f.flush();
     f.close();
 }
