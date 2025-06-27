@@ -4,6 +4,7 @@
 #include <QString>
 #include "forgotpassword.h"
 #include "mainwindow.h"
+#include "menu.h"
 #include "ui_logindialog.h"
 #include "user.h"
 loginDialog::loginDialog(QWidget *parent)
@@ -44,6 +45,9 @@ void loginDialog::on_approve_clicked()
             f.flush();
             f.close();
             f.close();
+            Menu *menu = new Menu(this, username, m.getSocket1(), m.getSocket2());
+            menu->show();
+            this->hide();
             return;
         }
     }
