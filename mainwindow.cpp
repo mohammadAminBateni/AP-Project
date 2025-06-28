@@ -1,6 +1,11 @@
 #include "mainwindow.h"
+#include <QHostInfo>
+#include <QList>
 #include <QNetworkDatagram>
+#include <QNetworkInterface>
 #include <QSettings>
+#include <QString>
+#include <QTimer>
 #include <QUdpSocket>
 #include "forgotpassword.h"
 #include "login.h"
@@ -14,9 +19,13 @@ MainWindow::MainWindow(QWidget *parent)
     udpSocket = new QUdpSocket(this);
     udpSocket->bind(45454, QUdpSocket::ShareAddress); // پورت دلخواه (باید با سرور یکی باشه)
     connect(udpSocket, &QUdpSocket::readyRead, this, &MainWindow::processBroadcast);
-    connect(menu, &Menu::logoutRequest, this, &MainWindow::handleLogout);
+    for (int i = 0; i < 2; ++i) {
+        sockets[i] = new QTcpSocket(this);
+        connect(sockets[i], &QTcpSocket::connected, this, &MainWindow::handleTcpConnected);
+        connect(sockets[i], &QTcpSocket::disconnected, this, &MainWindow::handleTcpDisconnected);
+        connect(menu, &Menu::logoutRequest, this, &MainWindow::handleLogout);
+    }
 }
-
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -28,21 +37,41 @@ void MainWindow::processBroadcast()
         QNetworkDatagram datagram = udpSocket->receiveDatagram();
         QString serverIp = datagram.senderAddress().toString();
 
-        for (int i = 0; i < 2; ++i) {
-            sockets[i] = new QTcpSocket(this);
-            sockets[i]->connectToHost(serverIp, 8080); // پورت TCP سرور
-            connect(sockets[i], &QTcpSocket::readyRead, this, &MainWindow::readyRead);
-            connect(sockets[i], &QTcpSocket::bytesWritten, this, &MainWindow::bytesWritten);
-            connect(sockets[i], &QTcpSocket::disconnected, this, &MainWindow::disconnect);
+        // Validate the broadcast message
+        if (datagram.data() == "GAME_SERVER_DISCOVERY") {
+            if (serverIp != currentServerIp) {
+                currentServerIp = serverIp;
+                connectToServer(serverIp);
+            }
         }
     }
 }
-
+void MainWindow::connectToServer(const QString &ip)
+{
+    for (int i = 0; i < 2; ++i) {
+        if (sockets[i]->state() != QAbstractSocket::ConnectedState) {
+            sockets[i]->connectToHost(ip, 8080);
+        }
+    }
+}
+void MainWindow::handleTcpConnected()
+{
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+}
 void MainWindow::readyRead() {}
 
 void MainWindow::bytesWritten() {}
 
-void MainWindow::disconnect() {}
+void MainWindow::handleTcpDisconnected()
+{
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    qDebug() << "TCP connection lost!";
+    QTimer::singleShot(5000, [this, socket]() {
+        if (!currentServerIp.isEmpty()) {
+            socket->connectToHost(currentServerIp, 8080);
+        }
+    });
+}
 
 void MainWindow::handleLogout()
 {
@@ -51,8 +80,7 @@ void MainWindow::handleLogout()
     QSettings settings;
     settings.remove("session_token");
     settings.remove("last_login");
-    login *l = new login;
-    l->show();
+    this->close();
 }
 void MainWindow::closeAllChildWindows()
 {
