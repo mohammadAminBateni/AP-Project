@@ -12,6 +12,7 @@ class User
     QString password;
     QString username;
     static int userCount;
+    int pauseRequests;
 
 public:
     User();
@@ -29,6 +30,16 @@ public:
     QString getPassword();
     QString getUsername();
     QString getPhone();
+    void setPassword(QString password);
+    void setFirstName(const QString &newFirstName);
+    void setLastName(const QString &newLastName);
+    void setPhone(const QString &newPhone);
+    void setGmail(const QString &newGmail);
+    void setUsername(const QString &newUsername);
+    QString toString() const;
+    static User fromString(const QString &str);
+    int getPauseRequests() const;
+    void setPauseRequests(int newPauseRequests);
 };
 
 #endif // USER_H
