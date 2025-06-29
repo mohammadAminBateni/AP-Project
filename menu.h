@@ -14,8 +14,7 @@ class Menu : public QWidget
 public:
     explicit Menu(QWidget *parent = nullptr,
                   const QString &username = "",
-                  QTcpSocket *socket1 = nullptr,
-                  QTcpSocket *socket2 = nullptr);
+                  QTcpSocket *socket = nullptr);
     ~Menu();
 signals:
     void logoutRequest();
@@ -24,10 +23,12 @@ private slots:
     void on_logout_clicked();
     void readyRead();
 
+    void on_hsitory_clicked();
+
 private:
     Ui::Menu *ui;
     QString currentUsername;
-    QTcpSocket sockets[2];
+    QTcpSocket *socket;
 };
 
 #endif // MENU_H

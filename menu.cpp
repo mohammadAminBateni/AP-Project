@@ -1,13 +1,13 @@
 #include "menu.h"
 #include <QMessageBox>
 #include "ui_menu.h"
-Menu::Menu(QWidget *parent, const QString &username, QTcpSocket *socket1, QTcpSocket *socket2)
+Menu::Menu(QWidget *parent, const QString &username, QTcpSocket *socket1)
     : QWidget(parent)
     , currentUsername(username)
-    , sockets{socket1, socket2}
+    , socket{socket1}
 {
     connect(socket1, &QTcpSocket::readyRead, this, &Menu::readyRead);
-    connect(socket2, &QTcpSocket::readyRead, this, &Menu::readyRead);
+    // connect(socket2, &QTcpSocket::readyRead, this, &Menu::readyRead);
 }
 
 Menu::~Menu()
@@ -23,9 +23,9 @@ void Menu::on_logout_clicked()
 
 void Menu::on_hsitory_clicked()
 {
-    if (sockets[0] && sockets[0]->isOpen()) {
+    if (socket && socket->isOpen()) {
         QString request = "GET_HISTORY:" + currentUsername;
-        sockets[0]->write(request.toUtf8());
+        socket->write(request.toUtf8());
     }
 }
 
