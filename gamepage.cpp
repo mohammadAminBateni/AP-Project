@@ -1,8 +1,10 @@
 #include "gamepage.h"
+#include <QMessageBox>
 #include <QTimer>
 #include "gameresult.h"
 #include "mainwindow.h"
 #include "menu.h"
+#include "swapdialog.h"
 #include "ui_gamepage.h"
 #include "user.h"
 GamePage::GamePage(QWidget *parent, const QString &userName, QTcpSocket *socket1)
@@ -38,7 +40,7 @@ void GamePage::displayCards(const QStringList &cardList)
 {
     for (int i = 0; i < cardList.size() && i < cards.size(); ++i) {
         QString card = cardList[i];
-        QString imagePath = ":/cards/" + card + ".JPG";
+        QString imagePath = ":new/prefix1/cards/" + card + ".JPG";
 
         cards[i]->setIcon(QIcon(imagePath));
         cards[i]->setIconSize(QSize(100, 150));
@@ -51,12 +53,17 @@ void GamePage::onCardClicked()
     QPushButton *btn = qobject_cast<QPushButton *>(sender());
     if (!btn)
         return;
-
+    if (sd && sd->isVisible()) {
+        QString card = btn->property("cardName").toString();
+        sd->setSelectedCard(card);
+        sd->accept();
+        return;
+    }
     QString card = btn->property("cardName").toString();
 
     QString message = "CHOOSE_CARD:" + card;
-    socket->write(message.toUtf8()); // فرستادن پیام به سرور
-    QString imagePath = ":/cards/" + card + ".JPG";
+    socket->write(message.toUtf8());
+    QString imagePath = ":new/prefix1/cards/" + card + ".JPG";
     QPixmap cardImg(imagePath);
     labels[currentSelection]->setPixmap(cardImg.scaled(100, 150, Qt::KeepAspectRatio));
     btn->setEnabled(false);
@@ -116,7 +123,39 @@ void GamePage::updateTimer(QString time)
     ui->timer->display(time);
 }
 
-void GamePage::on_swap_clicked() {}
+void GamePage::on_swap_clicked()
+{
+    QString req = "ROUND_NUMBER:";
+    socket->write(req.toUtf8());
+
+    if (socket->waitForReadyRead(3000)) {
+        QByteArray data1 = socket->readAll();
+        QString serverResponse = QString::fromUtf8(data1);
+
+        if (serverResponse.startsWith("ROUND_NUMBER:")) {
+            QString number = serverResponse.section(':', 1);
+            if (number.toInt() != 5) {
+                sd = new SwapDialog(this);
+                sd->exec();
+                QString selectedCard = sd->getSelectedCard();
+                delete sd;
+                sd = nullptr;
+                if (!selectedCard.isEmpty()) {
+                    QString message = "SWAP_REQUEST:" + selectedCard;
+                    socket->write(message.toUtf8());
+                } else {
+                    QMessageBox::warning(this, "Swap", "No card was selected for swap.");
+                }
+
+            } else {
+                QMessageBox::warning(this,
+                                     "Error",
+                                     "It is the 5th round and you cannot swap cards.");
+            }
+        }
+    }
+}
+
 void GamePage::readyRead()
 {
     QByteArray data = socket->readAll();
@@ -127,6 +166,5 @@ void GamePage::readyRead()
         GameResult *resultPage = new GameResult(nullptr, gameResult);
         resultPage->show();
         this->close();
-        return;
     }
 }

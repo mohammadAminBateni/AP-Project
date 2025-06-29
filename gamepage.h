@@ -6,6 +6,7 @@
 #include <QTime>
 #include <QWidget>
 #include "qpushbutton.h"
+#include "swapdialog.h"
 #include "user.h"
 namespace Ui {
 class GamePage;
@@ -45,6 +46,7 @@ private:
     QTimer *timer;
     User u;
     bool isGamePaused;
+    SwapDialog *sd = nullptr;
 };
 
 #endif // GAMEPAGE_H
