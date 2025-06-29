@@ -1,16 +1,14 @@
 #include "gamepage.h"
 #include <QTimer>
+#include "gameresult.h"
 #include "mainwindow.h"
 #include "menu.h"
 #include "ui_gamepage.h"
 #include "user.h"
-GamePage::GamePage(QWidget *parent,
-                   const QString &userName,
-                   QTcpSocket *socket1,
-                   QTcpSocket *socket2)
+GamePage::GamePage(QWidget *parent, const QString &userName, QTcpSocket *socket1)
     : QWidget(parent)
     , ui(new Ui::GamePage)
-    , sockets{socket1, socket2}
+    , socket{socket1}
     , username(userName)
 {
     ui->setupUi(this);
@@ -29,6 +27,7 @@ GamePage::GamePage(QWidget *parent,
     labels.push_back(ui->crd3);
     labels.push_back(ui->crd4);
     labels.push_back(ui->crd5);
+    connect(socket, &QTcpSocket::readyRead, this, &GamePage::readyRead);
 }
 
 GamePage::~GamePage()
@@ -56,7 +55,7 @@ void GamePage::onCardClicked()
     QString card = btn->property("cardName").toString();
 
     QString message = "CHOOSE_CARD:" + card;
-    sockets[0]->write(message.toUtf8()); // فرستادن پیام به سرور
+    socket->write(message.toUtf8()); // فرستادن پیام به سرور
     QString imagePath = ":/cards/" + card + ".JPG";
     QPixmap cardImg(imagePath);
     labels[currentSelection]->setPixmap(cardImg.scaled(100, 150, Qt::KeepAspectRatio));
@@ -71,10 +70,10 @@ void GamePage::onCardClicked()
 void GamePage::on_exit_clicked()
 {
     QString msg = "EXIT_GAME:" + username;
-    sockets[0]->write(msg.toUtf8());
+    socket->write(msg.toUtf8());
 
     this->close();
-    Menu *m = new Menu(parentWidget(), username, sockets[0], sockets[1]);
+    Menu *m = new Menu(parentWidget(), username, socket);
     m->show();
 }
 
@@ -94,13 +93,13 @@ void GamePage::on_stopOrContinue_clicked()
                 if (elapsedTime.second() >= 20) {
                     timer->stop();
                     QString msg = "PAUSE_TIMEOUT:" + u.getUsername();
-                    sockets[0]->write(msg.toUtf8());
+                    socket->write(msg.toUtf8());
                     this->close();
                 }
             });
             timer->start(1000);
             QString msg = "PAUSE_REQUEST:" + u.getUsername();
-            sockets[0]->write(msg.toUtf8());
+            socket->write(msg.toUtf8());
             ui->stopOrContinue->setText("Resume");
         }
     } else {
@@ -108,7 +107,7 @@ void GamePage::on_stopOrContinue_clicked()
         if (timer)
             timer->stop();
         QString msg = "RESUME_REQUEST:" + u.getUsername();
-        sockets[0]->write(msg.toUtf8());
+        socket->write(msg.toUtf8());
         ui->stopOrContinue->setText("Stop");
     }
 }
@@ -118,3 +117,16 @@ void GamePage::updateTimer(QString time)
 }
 
 void GamePage::on_swap_clicked() {}
+void GamePage::readyRead()
+{
+    QByteArray data = socket->readAll();
+    QString response = QString::fromUtf8(data);
+
+    if (response.startsWith("RESULT:")) {
+        QString gameResult = response.section(':', 1);
+        GameResult *resultPage = new GameResult(nullptr, gameResult);
+        resultPage->show();
+        this->close();
+        return;
+    }
+}

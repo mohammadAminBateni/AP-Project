@@ -18,8 +18,7 @@ class GamePage : public QWidget
 public:
     explicit GamePage(QWidget *parent = nullptr,
                       const QString &username = "",
-                      QTcpSocket *socket1 = nullptr,
-                      QTcpSocket *socket2 = nullptr);
+                      QTcpSocket *socket1 = nullptr);
     ~GamePage();
 signals:
     void updateTimerSignal(QString time);
@@ -28,19 +27,22 @@ public slots:
 private slots:
     void onCardClicked();
     void displayCards(const QStringList &cardList);
-
+    void readyRead();
     void on_exit_clicked();
 
     void on_stopOrContinue_clicked();
 
+    void on_swap_clicked();
+
 private:
     Ui::GamePage *ui;
     QVector<QPushButton *> cards;
-    QTcpSocket *sockets[2];
+    QTcpSocket *socket;
     QString username;
     QVector<QLabel *> labels;
     int currentSelection = 0;
     QTime elapsedTime;
+    QTimer *timer;
     User u;
     bool isGamePaused;
 };
