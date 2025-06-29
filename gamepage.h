@@ -34,6 +34,7 @@ private slots:
     void on_stopOrContinue_clicked();
 
     void on_swap_clicked();
+    void handleDisconnection();
 
 private:
     Ui::GamePage *ui;
@@ -43,7 +44,8 @@ private:
     QVector<QLabel *> labels;
     int currentSelection = 0;
     QTime elapsedTime;
-    QTimer *timer;
+    QTimer *timer1;
+    QTimer *timer2;
     User u;
     bool isGamePaused;
     SwapDialog *sd = nullptr;

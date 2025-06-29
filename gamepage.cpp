@@ -2,7 +2,6 @@
 #include <QMessageBox>
 #include <QTimer>
 #include "gameresult.h"
-#include "mainwindow.h"
 #include "menu.h"
 #include "swapdialog.h"
 #include "ui_gamepage.h"
@@ -30,6 +29,7 @@ GamePage::GamePage(QWidget *parent, const QString &userName, QTcpSocket *socket1
     labels.push_back(ui->crd4);
     labels.push_back(ui->crd5);
     connect(socket, &QTcpSocket::readyRead, this, &GamePage::readyRead);
+    connect(socket, &QTcpSocket::disconnected, this, &GamePage::handleDisconnection);
 }
 
 GamePage::~GamePage()
@@ -91,28 +91,28 @@ void GamePage::on_stopOrContinue_clicked()
             ui->stopOrContinue->setEnabled(false);
         } else {
             u.setPauseRequests(u.getPauseRequests() + 1);
-            timer = new QTimer;
+            timer1 = new QTimer;
             elapsedTime = QTime(0, 0, 0);
             connect(this, &GamePage::updateTimerSignal, this, &GamePage::updateTimer);
-            connect(timer, &QTimer::timeout, this, [this]() {
+            connect(timer1, &QTimer::timeout, this, [this]() {
                 elapsedTime = elapsedTime.addSecs(1);
                 emit updateTimer(elapsedTime.toString("hh:mm:ss"));
                 if (elapsedTime.second() >= 20) {
-                    timer->stop();
+                    timer1->stop();
                     QString msg = "PAUSE_TIMEOUT:" + u.getUsername();
                     socket->write(msg.toUtf8());
                     this->close();
                 }
             });
-            timer->start(1000);
+            timer1->start(1000);
             QString msg = "PAUSE_REQUEST:" + u.getUsername();
             socket->write(msg.toUtf8());
             ui->stopOrContinue->setText("Resume");
         }
     } else {
         isGamePaused = false;
-        if (timer)
-            timer->stop();
+        if (timer1)
+            timer1->stop();
         QString msg = "RESUME_REQUEST:" + u.getUsername();
         socket->write(msg.toUtf8());
         ui->stopOrContinue->setText("Stop");
@@ -154,6 +154,24 @@ void GamePage::on_swap_clicked()
             }
         }
     }
+}
+
+void GamePage::handleDisconnection()
+{
+    timer2 = new QTimer(this);
+    elapsedTime = QTime(0, 1, 0);
+    connect(this, &GamePage::updateTimerSignal, this, &GamePage::updateTimer);
+    connect(timer2, &QTimer::timeout, this, [this]() {
+        elapsedTime = elapsedTime.addSecs(-1);
+        emit updateTimer(elapsedTime.toString("hh:mm:ss"));
+        if (elapsedTime == QTime(0, 0, 0)) {
+            timer2->stop();
+            QString msg = "DISCONNECTED:" + u.getUsername();
+            socket->write(msg.toUtf8());
+            this->close();
+        }
+    });
+    timer2->start(1000);
 }
 
 void GamePage::readyRead()
