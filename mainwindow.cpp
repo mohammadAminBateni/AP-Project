@@ -16,47 +16,29 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    udpSocket = new QUdpSocket(this);
-    udpSocket->bind(45454, QUdpSocket::ShareAddress); // پورت دلخواه (باید با سرور یکی باشه)
-    connect(udpSocket, &QUdpSocket::readyRead, this, &MainWindow::processBroadcast);
     for (int i = 0; i < 2; ++i) {
         sockets[i] = new QTcpSocket(this);
         connect(sockets[i], &QTcpSocket::connected, this, &MainWindow::handleTcpConnected);
         connect(sockets[i], &QTcpSocket::disconnected, this, &MainWindow::handleTcpDisconnected);
         connect(menu, &Menu::logoutRequest, this, &MainWindow::handleLogout);
     }
+    currentServerIp = ui->ip->text();
 }
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-void MainWindow::processBroadcast()
-{
-    while (udpSocket->hasPendingDatagrams()) {
-        QNetworkDatagram datagram = udpSocket->receiveDatagram();
-        QString serverIp = datagram.senderAddress().toString();
-
-        // Validate the broadcast message
-        if (datagram.data() == "GAME_SERVER_DISCOVERY") {
-            if (serverIp != currentServerIp) {
-                currentServerIp = serverIp;
-                connectToServer(serverIp);
-            }
-        }
-    }
-}
-void MainWindow::connectToServer(const QString &ip)
+void MainWindow::connectToServer()
 {
     for (int i = 0; i < 2; ++i) {
         if (sockets[i]->state() != QAbstractSocket::ConnectedState) {
-            sockets[i]->connectToHost(ip, 8080);
+            sockets[i]->connectToHost(ui->ip->text(), 8080);
+            if (sockets[i]->waitForConnected())
+                ui->state->setText("Connected");
+            else
+                ui->state->setText("Error");
         }
     }
-}
-void MainWindow::handleTcpConnected()
-{
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
 }
 void MainWindow::readyRead() {}
 

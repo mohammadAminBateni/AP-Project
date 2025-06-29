@@ -22,21 +22,17 @@ public:
     QTcpSocket *getSocket2();
     void closeAllChildWindows();
 public slots:
-    void processBroadcast();
     void readyRead();
     void bytesWritten();
     void disconnect();
     void handleLogout();
-    void handleTcpConnected();
     void handleTcpDisconnected();
-    void handleTcpError(QAbstractSocket::SocketError error);
 
 private:
     Ui::MainWindow *ui;
     QTcpSocket *sockets[2];
-    QUdpSocket *udpSocket;
     Menu *menu;
     QString currentServerIp;
-    void connectToServer(const QString &ip);
+    void connectToServer();
 };
 #endif // MAINWINDOW_H
