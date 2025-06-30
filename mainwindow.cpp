@@ -7,17 +7,18 @@
 #include <QString>
 #include <QTimer>
 #include <QUdpSocket>
+#include "signupdialog.h"
 #include "ui_mainwindow.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    for (int i = 0; i < 2; ++i) {
-        sockets[i] = new QTcpSocket(this);
-        connect(sockets[i], &QTcpSocket::connected, this, &::MainWindow::connectToServer);
-        connect(sockets[i], &QTcpSocket::disconnected, this, &MainWindow::handleTcpDisconnected);
-    }
+
+    socket = new QTcpSocket(this);
+    connect(socket, &QTcpSocket::connected, this, &::MainWindow::connectToServer);
+    connect(socket, &QTcpSocket::disconnected, this, &MainWindow::handleTcpDisconnected);
+
     currentServerIp = ui->ip->text();
 }
 MainWindow::~MainWindow()
@@ -26,14 +27,14 @@ MainWindow::~MainWindow()
 }
 void MainWindow::connectToServer()
 {
-    for (int i = 0; i < 2; ++i) {
-        if (sockets[i]->state() != QAbstractSocket::ConnectedState) {
-            sockets[i]->connectToHost(ui->ip->text(), 8080);
-            if (sockets[i]->waitForConnected())
-                ui->state->setText("Connected");
-            else
-                ui->state->setText("Error");
-        }
+    if (socket->state() != QAbstractSocket::ConnectedState) {
+        socket->connectToHost(ui->ip->text(), 8080);
+        if (socket->waitForConnected()) {
+            ui->state->setText("Connected");
+            signupDialog *sd = new signupDialog(this,socket);
+            sd->show();
+        } else
+            ui->state->setText("Error");
     }
 }
 void MainWindow::readyRead() {}

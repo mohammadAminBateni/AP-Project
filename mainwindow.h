@@ -22,12 +22,11 @@ public:
 public slots:
     void readyRead();
     void bytesWritten();
-    void disconnect();
     void handleTcpDisconnected();
 
 private:
     Ui::MainWindow *ui;
-    QTcpSocket *sockets[2];
+    QTcpSocket *socket;
     Menu *menu;
     QString currentServerIp;
     void connectToServer();
