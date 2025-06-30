@@ -14,7 +14,8 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">border-image: url(:/new/prefix1/menu.jpg);</string>
+   <string notr="true">border-image: url(:/new/prefix1/menu.jpg);
+border-image: url(:/loginPic/loginPic.jpg);</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">

@@ -13,7 +13,17 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">border-image: url(:/loginPic/loginPic.jpg);</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout_3">
+   <item row="1" column="1">
+    <widget class="QPushButton" name="approve">
+     <property name="text">
+      <string>Ok</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
@@ -91,13 +101,6 @@
       </layout>
      </item>
     </layout>
-   </item>
-   <item row="1" column="1">
-    <widget class="QPushButton" name="approve">
-     <property name="text">
-      <string>Ok</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
