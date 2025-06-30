@@ -21,6 +21,7 @@ public:
                       const QString &username = "",
                       QTcpSocket *socket1 = nullptr);
     ~GamePage();
+    void handleNotChoosingCard();
 signals:
     void updateTimerSignal(QString time);
 public slots:
@@ -35,6 +36,8 @@ private slots:
 
     void on_swap_clicked();
     void handleDisconnection();
+    void startInactivityTimer();
+    void startFinalCountdown();
 
 private:
     Ui::GamePage *ui;
@@ -49,6 +52,11 @@ private:
     User u;
     bool isGamePaused;
     SwapDialog *sd = nullptr;
+    QTimer *inactivity;
+    QTimer *countDown;
+    int notChoosingCard = 0;
+    QTime inactivityElapsed;
+    QTime countdownElapsed;
 };
 
 #endif // GAMEPAGE_H

@@ -36,6 +36,65 @@ GamePage::~GamePage()
 {
     delete ui;
 }
+
+void GamePage::handleNotChoosingCard()
+{
+    if (inactivity && inactivity->isActive())
+        return;
+
+    inactivity = new QTimer(this);
+    countDown = new QTimer(this);
+    inactivityElapsed = QTime(0, 0, 0);
+    countdownElapsed = QTime(0, 0, 10);
+
+    connect(inactivity, &QTimer::timeout, this, [=]() {
+        inactivityElapsed = inactivityElapsed.addSecs(1);
+        ui->timer->display(inactivityElapsed.toString("mm:ss"));
+
+        if (inactivityElapsed == QTime(0, 0, 20)) {
+            inactivity->stop();
+            QMessageBox::warning(this, "Time Warning", "You have 10 seconds to pick a card!");
+
+            connect(countDown, &QTimer::timeout, this, [=]() {
+                countdownElapsed = countdownElapsed.addSecs(-1);
+                ui->timer->display(countdownElapsed.toString("mm:ss"));
+
+                if (countdownElapsed == QTime(0, 0, 0)) {
+                    countDown->stop();
+
+                    QString selectedCard;
+                    for (QPushButton *btn : cards) {
+                        if (btn->isEnabled()) {
+                            selectedCard = btn->property("cardName").toString();
+                            break;
+                        }
+                    }
+
+                    if (!selectedCard.isEmpty()) {
+                        QString msg = "CHOOSE_CARD:" + selectedCard;
+                        socket->write(msg.toUtf8());
+                        QPixmap cardImg(":new/prefix1/cards/" + selectedCard + ".JPG");
+                        labels[currentSelection]->setPixmap(
+                            cardImg.scaled(100, 150, Qt::KeepAspectRatio));
+                        currentSelection++;
+                    }
+
+                    notChoosingCard++;
+                    if (notChoosingCard >= 2) {
+                        QString msg = "FORFEIT:" + u.getUsername();
+                        socket->write(msg.toUtf8());
+                        this->close();
+                    }
+                }
+            });
+
+            countDown->start(1000);
+        }
+    });
+
+    inactivity->start(1000);
+}
+
 void GamePage::displayCards(const QStringList &cardList)
 {
     for (int i = 0; i < cardList.size() && i < cards.size(); ++i) {
@@ -127,33 +186,6 @@ void GamePage::on_swap_clicked()
 {
     QString req = "ROUND_NUMBER:";
     socket->write(req.toUtf8());
-
-    if (socket->waitForReadyRead(3000)) {
-        QByteArray data1 = socket->readAll();
-        QString serverResponse = QString::fromUtf8(data1);
-
-        if (serverResponse.startsWith("ROUND_NUMBER:")) {
-            QString number = serverResponse.section(':', 1);
-            if (number.toInt() != 5) {
-                sd = new SwapDialog(this);
-                sd->exec();
-                QString selectedCard = sd->getSelectedCard();
-                delete sd;
-                sd = nullptr;
-                if (!selectedCard.isEmpty()) {
-                    QString message = "SWAP_REQUEST:" + selectedCard;
-                    socket->write(message.toUtf8());
-                } else {
-                    QMessageBox::warning(this, "Swap", "No card was selected for swap.");
-                }
-
-            } else {
-                QMessageBox::warning(this,
-                                     "Error",
-                                     "It is the 5th round and you cannot swap cards.");
-            }
-        }
-    }
 }
 
 void GamePage::handleDisconnection()
@@ -176,13 +208,36 @@ void GamePage::handleDisconnection()
 
 void GamePage::readyRead()
 {
-    QByteArray data = socket->readAll();
-    QString response = QString::fromUtf8(data);
+    QString response = QString::fromUtf8(socket->readAll());
 
     if (response.startsWith("RESULT:")) {
         QString gameResult = response.section(':', 1);
         GameResult *resultPage = new GameResult(nullptr, gameResult);
         resultPage->show();
         this->close();
+    } else if (response.startsWith("ROUND_NUMBER:")) {
+        QString number = response.section(':', 1);
+        if (number.toInt() != 5) {
+            sd = new SwapDialog(this);
+            sd->exec();
+            QString selectedCard = sd->getSelectedCard();
+            delete sd;
+            sd = nullptr;
+            if (!selectedCard.isEmpty()) {
+                QString message = "SWAP_REQUEST:" + selectedCard;
+                socket->write(message.toUtf8());
+            } else {
+                QMessageBox::warning(this, "Swap", "No card was selected for swap.");
+            }
+        } else {
+            QMessageBox::warning(this, "Error", "It is the 5th round and you cannot swap cards.");
+        }
+    } else if (response == "YOUR_TURN") {
+        handleNotChoosingCard(); // آغاز شمارش معکوس
+    } else if (response.startsWith("SWAP_RESPONSE:")) {
+        QString res = response.section(':', 1);
+        if (res == "NO") {
+            QMessageBox::information(this, "Info", "Opponent rejected the card swap.");
+        }
     }
 }
