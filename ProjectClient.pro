@@ -55,6 +55,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     cardPictures.qrc \
     cards.qrc \
+    loginPic.qrc \
     menuPic.qrc \
     result.qrc
 

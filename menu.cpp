@@ -4,9 +4,11 @@
 #include "ui_menu.h"
 Menu::Menu(QWidget *parent, const QString &username, QTcpSocket *socket1)
     : QWidget(parent)
+    , ui(new Ui::Menu)
     , currentUsername(username)
     , socket{socket1}
 {
+    ui->setupUi(this);
     connect(socket1, &QTcpSocket::readyRead, this, &Menu::readyRead);
 }
 
@@ -17,11 +19,11 @@ Menu::~Menu()
 
 void Menu::on_logout_clicked()
 {
-    const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
-    for (QWidget *widget : topLevelWidgets) {
-        if (widget != nullptr)
-            widget->close();
+    if (socket && socket->isOpen()) {
+        socket->write("LOGOUT:" + currentUsername.toUtf8());
+        socket->disconnectFromHost();
     }
+    QApplication::quit();
 }
 
 void Menu::on_hsitory_clicked()
@@ -69,6 +71,7 @@ void Menu::readyRead()
 
 void Menu::on_start_clicked()
 {
-    GamePage *game = new GamePage;
+    GamePage *game = new GamePage(this, currentUsername, socket);
     game->show();
+    this->close();
 }

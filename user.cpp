@@ -6,6 +6,48 @@ int User::getUserCount()
 {
     return userCount;
 }
+void User::setFirstName(const QString &newFirstName)
+{
+    firstName = newFirstName;
+}
+
+void User::setLastName(const QString &newLastName)
+{
+    lastName = newLastName;
+}
+
+void User::setPhone(const QString &newPhone)
+{
+    phone = newPhone;
+}
+
+void User::setGmail(const QString &newGmail)
+{
+    gmail = newGmail;
+}
+
+void User::setUsername(const QString &newUsername)
+{
+    username = newUsername;
+}
+
+int User::getPauseRequests() const
+{
+    return pauseRequests;
+}
+
+void User::setPauseRequests(int newPauseRequests)
+{
+    pauseRequests = newPauseRequests;
+}
+
+QString User::getFirstName() const
+{
+    return firstName;
+}
+
+QString User::getLastName() const {}
+
 User::User()
 {
     firstName = "";
@@ -24,12 +66,12 @@ User::User(QString firstName,
            QString username,
            QString password)
 {
-    firstName = this->firstName;
-    lastName = this->lastName;
-    phone = this->phone;
-    username = this->username;
-    password = this->password;
-    gmail = this->gmail;
+    this->firstName = firstName;
+    this->lastName = lastName;
+    this->phone = phone;
+    this->gmail = gmail;
+    this->username = username;
+    this->password = password;
     userCount++;
 }
 QString User::hashPassword(const QString &password)
@@ -80,4 +122,30 @@ QString User::getPhone()
 void User::setPassword(QString password)
 {
     this->password = password;
+}
+QString User::toString() const
+{
+    return QString("%1|%2|%3|%4|%5|%6")
+        .arg(username)
+        .arg(firstName)
+        .arg(lastName)
+        .arg(phone)
+        .arg(gmail)
+        .arg(password);
+}
+User User::fromString(const QString &str)
+{
+    User user;
+    QStringList parts = str.split('|');
+
+    if (parts.size() >= 6) {
+        user.setUsername(parts[0]);
+        user.setFirstName(parts[1]);
+        user.setLastName(parts[2]);
+        user.setPhone(parts[3]);
+        user.setGmail(parts[4]);
+        user.setPassword(parts[5]);
+    }
+
+    return user;
 }

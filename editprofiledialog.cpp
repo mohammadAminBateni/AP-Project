@@ -1,12 +1,15 @@
 #include "editprofiledialog.h"
+#include <QCryptographicHash>
 #include <QFile>
 #include <QMessageBox>
 #include <QTextStream>
 #include "ui_editprofiledialog.h"
 #include "user.h"
-EditProfileDialog::EditProfileDialog(QWidget *parent)
+#include <mainwindow.h>
+EditProfileDialog::EditProfileDialog(QWidget *parent, QTcpSocket *sock)
     : QWidget(parent)
     , ui(new Ui::EditProfileDialog)
+    , socket(sock)
 {
     ui->setupUi(this);
 }
@@ -18,26 +21,19 @@ EditProfileDialog::~EditProfileDialog()
 
 void EditProfileDialog::on_approve_clicked()
 {
-    // 1. باز کردن فایل به صورت خواندن و نوشتن
     QFile file("users.txt");
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
         QMessageBox::critical(this, "Error", "Cannot open users file!");
         return;
     }
-
-    // 2. خواندن تمام کاربران
     QTextStream stream(&file);
     QStringList allUsers;
-    User currentUser;
+    User updatedUser;
     bool userFound = false;
-
     while (!stream.atEnd()) {
         QString line = stream.readLine();
-        User u = User::fromString(
-            line); // فرض می‌کنیم متدی برای تبدیل رشته به User داریم
-
+        User u = User::fromString(line);
         if (u.getUsername() == ui->currentUsername->text()) {
-            // 3. به‌روزرسانی فیلدها
             if (!ui->firstName->text().isEmpty())
                 u.setFirstName(ui->firstName->text());
             if (!ui->lastName->text().isEmpty())
@@ -47,47 +43,54 @@ void EditProfileDialog::on_approve_clicked()
             if (!ui->gmail->text().isEmpty())
                 u.setGmail(ui->gmail->text());
             if (!ui->password->text().isEmpty())
-                u.setPassword(ui->password->text());
-
-            // 4. بررسی نام کاربری جدید
-            if (!ui->username->text().isEmpty()) {
-                if (ui->username->text() != ui->currentUsername->text()) {
-                    // بررسی تکراری نبودن نام کاربری جدید
-                    bool usernameExists = false;
-                    for (const QString &userLine : allUsers) {
-                        User tmp = User::fromString(userLine);
-                        if (tmp.getUsername() == ui->username->text()) {
-                            usernameExists = true;
-                            break;
-                        }
+                u.setPassword(QCryptographicHash::hash(ui->password->text().toUtf8(),
+                                                       QCryptographicHash::Sha256)
+                                  .toHex());
+            if (!ui->username->text().isEmpty()
+                && ui->username->text() != ui->currentUsername->text()) {
+                bool usernameExists = false;
+                for (const QString &userLine : allUsers) {
+                    User tmp = User::fromString(userLine);
+                    if (tmp.getUsername() == ui->username->text()) {
+                        usernameExists = true;
+                        break;
                     }
-                    if (usernameExists) {
-                        QMessageBox::warning(this, "Error", "Username already exists!");
-                        file.close();
-                        return;
-                    }
-                    u.setUsername(ui->username->text());
                 }
+                if (usernameExists) {
+                    QMessageBox::warning(this, "Error", "Username already exists!");
+                    file.close();
+                    Menu *m = new Menu(nullptr, ui->currentUsername->text(), socket);
+                    m->show();
+                    this->close();
+                    return;
+                }
+                u.setUsername(ui->username->text());
             }
-
+            updatedUser = u;
             userFound = true;
         }
-        allUsers << u.toString(); // ذخیره تمام کاربران (با تغییرات)
+        allUsers << u.toString();
     }
-
-    // 5. اگر کاربر پیدا نشد
     if (!userFound) {
         QMessageBox::warning(this, "Error", "User not found!");
         file.close();
+        this->close();
+        Menu *m = new Menu(nullptr, ui->currentUsername->text(), socket);
+        m->show();
         return;
     }
-
-    // 6. بازنویسی کامل فایل
-    file.resize(0); // پاک کردن محتوای قدیمی
-    for (const QString &userLine : allUsers) {
-        stream << userLine << "\n";
+    file.resize(0);
+    QTextStream out(&file);
+    for (const QString &line : allUsers) {
+        out << line << "\n";
     }
-
+    QString message = "UPDATE_PROFILE:" + ui->currentUsername->text() + ":"
+                      + updatedUser.getFirstName() + ":" + updatedUser.getLastName() + ":"
+                      + updatedUser.getPhone() + ":" + updatedUser.getGmail() + ":"
+                      + updatedUser.getUsername() + ":" + updatedUser.getPassword();
+    socket->write(message.toUtf8());
     file.close();
+    Menu *m = new Menu(nullptr, updatedUser.getUsername(), socket);
     QMessageBox::information(this, "Success", "Profile updated successfully!");
+    m->show();
 }

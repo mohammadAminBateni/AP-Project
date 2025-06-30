@@ -2,9 +2,10 @@
 #include "logindialog.h"
 #include "signupdialog.h"
 #include "ui_login.h"
-login::login(QWidget *parent)
+login::login(QWidget *parent, QTcpSocket *sock)
     : QWidget(parent)
     , ui(new Ui::login)
+    , socket(sock)
 {
     ui->setupUi(this);
 }
@@ -16,12 +17,14 @@ login::~login()
 
 void login::on_signup_clicked()
 {
-    signupDialog s(this);
-    s.show();
+    signupDialog *s = new signupDialog(this, socket);
+    s->show();
+    this->close();
 }
 
 void login::on_login_2_clicked()
 {
-    loginDialog l(this);
-    l.show();
+    loginDialog *l = new loginDialog(this, socket);
+    l->show();
+    this->close();
 }

@@ -1,12 +1,14 @@
 #include "signupdialog.h"
 #include <QFile>
 #include <QMessageBox>
+#include "login.h"
 #include "ui_signupdialog.h"
 #include "user.h"
 #include <mainwindow.h>
-signupDialog::signupDialog(QWidget *parent)
+signupDialog::signupDialog(QWidget *parent, QTcpSocket *sock)
     : QWidget(parent)
     , ui(new Ui::signupDialog)
+    , socket(sock)
 {
     ui->setupUi(this);
 }
@@ -70,14 +72,13 @@ bool signupDialog::checkPassword()
 }
 void signupDialog::on_approve_clicked()
 {
-    if (User::getUserCount() == 0) {
+    if (User::getUserCount() == 0 && checkGmail() && checkPassword() && checkPhone()) {
         User u(ui->firstName->text(),
                ui->lastName->text(),
                ui->phone->text(),
                ui->gmail->text(),
                ui->username->text(),
                ui->password->text());
-        QByteArray block;
         QFile f("users.txt");
         if (!f.open(QIODevice::Append | QIODevice::Text)) {
             QMessageBox::warning(this, "Error", "The file can not be opened!");
@@ -85,13 +86,15 @@ void signupDialog::on_approve_clicked()
         }
         QTextStream out(&f);
         out << u;
-        block.append(f.readAll());
-        MainWindow m;
-        m.getSocket1()->write(block);
-        m.getSocket2()->write(block);
+        QString message = "SIGNUP:" + u.getFirstName() + ":" + u.getLastName() + ":" + u.getPhone()
+                          + ":" + u.getGmail() + ":" + u.getUsername() + ":" + u.getPassword();
+
+        socket->write(message.toUtf8());
         f.flush();
         f.close();
-        return;
+        this->close();
+        login *l = new login(nullptr, socket);
+        l->show();
     }
     if (!checkGmail() || !checkPassword() || !checkPhone()) {
         QMessageBox::warning(
@@ -104,7 +107,6 @@ void signupDialog::on_approve_clicked()
            ui->gmail->text(),
            ui->username->text(),
            ui->password->text());
-    QByteArray block;
     QFile f("users.txt");
     if (!f.open(QIODevice::Append | QIODevice::Text)) {
         QMessageBox::warning(this, "Error", "The file can not be opened!");
@@ -112,10 +114,13 @@ void signupDialog::on_approve_clicked()
     }
     QTextStream out(&f);
     out << u;
-    block.append(f.readAll());
-    MainWindow m;
-    m.getSocket1()->write(block);
-    m.getSocket2()->write(block);
+    QString message = "SIGNUP:" + u.getFirstName() + ":" + u.getLastName() + ":" + u.getPhone()
+                      + ":" + u.getGmail() + ":" + u.getUsername() + ":" + u.getPassword();
+
+    socket->write(message.toUtf8());
     f.flush();
     f.close();
+    login *l = new login(nullptr, socket);
+    l->show();
+    this->close();
 }

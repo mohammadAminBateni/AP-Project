@@ -40,6 +40,9 @@ public:
     static User fromString(const QString &str);
     int getPauseRequests() const;
     void setPauseRequests(int newPauseRequests);
+    QString getFirstName() const;
+    QString getLastName() const;
+    QString getGmail() const;
 };
 
 #endif // USER_H

@@ -2,12 +2,13 @@
 #include <QByteArray>
 #include <QFile>
 #include <QMessageBox>
-#include "mainwindow.h"
+#include "login.h"
 #include "ui_forgotpassword.h"
 #include "user.h"
-forgotPassword::forgotPassword(QWidget *parent)
+forgotPassword::forgotPassword(QWidget *parent, QTcpSocket *sock)
     : QWidget(parent)
     , ui(new Ui::forgotPassword)
+    , socket(sock)
 {
     ui->setupUi(this);
 }
@@ -24,7 +25,11 @@ QString forgotPassword::getPhone()
 
 void forgotPassword::on_approve_clicked()
 {
-    QByteArray block;
+    if (ui->newPassword->text().length() < 8) {
+        QMessageBox::warning(this, "Error", "Password must be at least 8 characters!");
+        return;
+    }
+
     QFile f("users.txt");
     if (!f.open(QIODevice::ReadWrite | QIODevice::Text)) {
         QMessageBox::warning(this, "Error", "Cannot open users file!");
@@ -49,19 +54,22 @@ void forgotPassword::on_approve_clicked()
     }
 
     if (userFound) {
-        f.resize(0); // پاک کردن فایل
+        f.resize(0);
         QTextStream out(&f);
         for (const QString &line : lines) {
             out << line << "\n";
         }
+        QString newPasswordHashed = User().hashPassword(ui->newPassword->text());
+        QString msg = "PASSWORD_RESET:" + ui->phone->text() + ":" + newPasswordHashed;
+        socket->write(msg.toUtf8());
+
         QMessageBox::information(this, "Success", "Password updated!");
+        this->close();
+        login *l = new login(nullptr, socket);
+        l->show();
     } else {
         QMessageBox::warning(this, "Error", "Phone number not found!");
     }
-    block.append(f.readAll());
-    MainWindow m;
-    m.getSocket1()->write(block);
-    m.getSocket2()->write(block);
-    f.flush();
+
     f.close();
 }

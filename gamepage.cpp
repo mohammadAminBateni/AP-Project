@@ -73,15 +73,17 @@ void GamePage::handleNotChoosingCard()
                     if (!selectedCard.isEmpty()) {
                         QString msg = "CHOOSE_CARD:" + selectedCard;
                         socket->write(msg.toUtf8());
-                        QPixmap cardImg(":new/prefix1/cards/" + selectedCard + ".JPG");
+                        QPixmap cardImg(":/new/prefix1/cards/" + selectedCard + ".JPG");
                         labels[currentSelection]->setPixmap(
                             cardImg.scaled(100, 150, Qt::KeepAspectRatio));
                         currentSelection++;
+                        for (QPushButton *btn : cards)
+                            btn->setEnabled(false);
                     }
 
                     notChoosingCard++;
                     if (notChoosingCard >= 2) {
-                        QString msg = "FORFEIT:" + u.getUsername();
+                        QString msg = "FORFEIT:" + username;
                         socket->write(msg.toUtf8());
                         this->close();
                     }
@@ -99,7 +101,7 @@ void GamePage::displayCards(const QStringList &cardList)
 {
     for (int i = 0; i < cardList.size() && i < cards.size(); ++i) {
         QString card = cardList[i];
-        QString imagePath = ":new/prefix1/cards/" + card + ".JPG";
+        QString imagePath = ":/new/prefix1/cards/" + card + ".JPG";
 
         cards[i]->setIcon(QIcon(imagePath));
         cards[i]->setIconSize(QSize(100, 150));
@@ -122,7 +124,7 @@ void GamePage::onCardClicked()
 
     QString message = "CHOOSE_CARD:" + card;
     socket->write(message.toUtf8());
-    QString imagePath = ":new/prefix1/cards/" + card + ".JPG";
+    QString imagePath = ":/new/prefix1/cards/" + card + ".JPG";
     QPixmap cardImg(imagePath);
     labels[currentSelection]->setPixmap(cardImg.scaled(100, 150, Qt::KeepAspectRatio));
     btn->setEnabled(false);
@@ -150,7 +152,7 @@ void GamePage::on_stopOrContinue_clicked()
             ui->stopOrContinue->setEnabled(false);
         } else {
             u.setPauseRequests(u.getPauseRequests() + 1);
-            timer1 = new QTimer;
+            timer1 = new QTimer(this);
             elapsedTime = QTime(0, 0, 0);
             connect(this, &GamePage::updateTimerSignal, this, &GamePage::updateTimer);
             connect(timer1, &QTimer::timeout, this, [this]() {
@@ -158,13 +160,13 @@ void GamePage::on_stopOrContinue_clicked()
                 emit updateTimer(elapsedTime.toString("hh:mm:ss"));
                 if (elapsedTime.second() >= 20) {
                     timer1->stop();
-                    QString msg = "PAUSE_TIMEOUT:" + u.getUsername();
+                    QString msg = "PAUSE_TIMEOUT:" + username;
                     socket->write(msg.toUtf8());
                     this->close();
                 }
             });
             timer1->start(1000);
-            QString msg = "PAUSE_REQUEST:" + u.getUsername();
+            QString msg = "PAUSE_REQUEST:" + username;
             socket->write(msg.toUtf8());
             ui->stopOrContinue->setText("Resume");
         }
@@ -172,7 +174,7 @@ void GamePage::on_stopOrContinue_clicked()
         isGamePaused = false;
         if (timer1)
             timer1->stop();
-        QString msg = "RESUME_REQUEST:" + u.getUsername();
+        QString msg = "RESUME_REQUEST:" + username;
         socket->write(msg.toUtf8());
         ui->stopOrContinue->setText("Stop");
     }
@@ -193,14 +195,16 @@ void GamePage::handleDisconnection()
     timer2 = new QTimer(this);
     elapsedTime = QTime(0, 1, 0);
     connect(this, &GamePage::updateTimerSignal, this, &GamePage::updateTimer);
-    connect(timer2, &QTimer::timeout, this, [this]() {
+    connect(timer2, &QTimer::timeout, this, [=]() {
         elapsedTime = elapsedTime.addSecs(-1);
         emit updateTimer(elapsedTime.toString("hh:mm:ss"));
         if (elapsedTime == QTime(0, 0, 0)) {
             timer2->stop();
-            QString msg = "DISCONNECTED:" + u.getUsername();
+            QString msg = "DISCONNECTED:" + username;
             socket->write(msg.toUtf8());
             this->close();
+            Menu *m = new Menu(nullptr, username, socket);
+            m->show();
         }
     });
     timer2->start(1000);
@@ -212,13 +216,15 @@ void GamePage::readyRead()
 
     if (response.startsWith("RESULT:")) {
         QString gameResult = response.section(':', 1);
-        GameResult *resultPage = new GameResult(nullptr, gameResult);
+        GameResult *resultPage = new GameResult(nullptr, gameResult, socket, username);
         resultPage->show();
         this->close();
+        this->deleteLater();
+        return;
     } else if (response.startsWith("ROUND_NUMBER:")) {
         QString number = response.section(':', 1);
         if (number.toInt() != 5) {
-            sd = new SwapDialog(this);
+            sd = new SwapDialog(this, socket);
             sd->exec();
             QString selectedCard = sd->getSelectedCard();
             delete sd;
@@ -233,7 +239,7 @@ void GamePage::readyRead()
             QMessageBox::warning(this, "Error", "It is the 5th round and you cannot swap cards.");
         }
     } else if (response == "YOUR_TURN") {
-        handleNotChoosingCard(); // آغاز شمارش معکوس
+        handleNotChoosingCard();
     } else if (response.startsWith("SWAP_RESPONSE:")) {
         QString res = response.section(':', 1);
         if (res == "NO") {

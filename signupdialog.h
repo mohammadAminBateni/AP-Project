@@ -2,6 +2,7 @@
 #define SIGNUPDIALOG_H
 
 #include <QWidget>
+#include "qtcpsocket.h"
 
 namespace Ui {
 class signupDialog;
@@ -12,7 +13,7 @@ class signupDialog : public QWidget
     Q_OBJECT
 
 public:
-    explicit signupDialog(QWidget *parent = nullptr);
+    explicit signupDialog(QWidget *parent = nullptr,QTcpSocket*socket=nullptr);
     ~signupDialog();
     QString getName();
     QString getLastName();
@@ -29,6 +30,7 @@ private slots:
 
 private:
     Ui::signupDialog *ui;
+    QTcpSocket *socket;
 };
 
 #endif // SIGNUPDIALOG_H

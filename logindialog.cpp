@@ -3,13 +3,13 @@
 #include <QMessageBox>
 #include <QString>
 #include "forgotpassword.h"
-#include "mainwindow.h"
 #include "menu.h"
 #include "ui_logindialog.h"
 #include "user.h"
-loginDialog::loginDialog(QWidget *parent)
+loginDialog::loginDialog(QWidget *parent, QTcpSocket *sock)
     : QWidget(parent)
     , ui(new Ui::loginDialog)
+    , socket(sock)
 {
     ui->setupUi(this);
 }
@@ -21,11 +21,17 @@ loginDialog::~loginDialog()
 
 void loginDialog::on_approve_clicked()
 {
+    QString username = ui->username->text().trimmed();
+    QString password = ui->password->text();
+
+    if (username.isEmpty() || password.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter both username and password.");
+        return;
+    }
+
     User tempUser;
-    QString hashedPassword = tempUser.hashPassword(ui->password->text());
-    QString username = ui->username->text();
-    QString password = hashedPassword;
-    QByteArray block;
+    QString hashedPassword = tempUser.hashPassword(password);
+
     QFile f("users.txt");
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox::warning(this, "Error", "Cannot open users file!");
@@ -33,31 +39,37 @@ void loginDialog::on_approve_clicked()
     }
 
     QTextStream in(&f);
+    bool found = false;
     while (!in.atEnd()) {
         QString line = in.readLine();
         QStringList parts = line.split("|");
-        if (parts.size() >= 6 && parts[4] == username && parts[5] == password) {
-            QMessageBox::information(this, "Success", "Login successful!");
-            block.append(f.readAll());
-            MainWindow m;
-            m.getSocket1()->write(block);
-            m.getSocket2()->write(block);
-            f.flush();
-            f.close();
-            f.close();
-            Menu *menu = new Menu(this, username, m.getSocket1(), m.getSocket2());
-            menu->show();
-            this->hide();
-            return;
+        if (parts.size() >= 6) {
+            QString storedUsername = parts[4].trimmed();
+            QString storedPassword = parts[5].trimmed();
+
+            if (storedUsername == username && storedPassword == hashedPassword) {
+                found = true;
+                break;
+            }
         }
     }
-
-    QMessageBox::warning(this, "Error", "Invalid username or password!");
     f.close();
+
+    if (found) {
+        QMessageBox::information(this, "Success", "Login successful!");
+        QString message = "LOGIN:" + username + ":" + hashedPassword;
+        socket->write(message.toUtf8());
+        Menu *menu = new Menu(nullptr, username, socket);
+        menu->show();
+        this->close();
+    } else {
+        QMessageBox::warning(this, "Error", "Invalid username or password!");
+    }
 }
 
 void loginDialog::on_forgotPassword_clicked()
 {
     forgotPassword fp(this);
     fp.show();
+    this->close();
 }
