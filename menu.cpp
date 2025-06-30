@@ -1,5 +1,6 @@
 #include "menu.h"
 #include <QMessageBox>
+#include "gamepage.h"
 #include "ui_menu.h"
 Menu::Menu(QWidget *parent, const QString &username, QTcpSocket *socket1)
     : QWidget(parent)
@@ -7,7 +8,6 @@ Menu::Menu(QWidget *parent, const QString &username, QTcpSocket *socket1)
     , socket{socket1}
 {
     connect(socket1, &QTcpSocket::readyRead, this, &Menu::readyRead);
-    // connect(socket2, &QTcpSocket::readyRead, this, &Menu::readyRead);
 }
 
 Menu::~Menu()
@@ -17,8 +17,11 @@ Menu::~Menu()
 
 void Menu::on_logout_clicked()
 {
-    emit logoutRequest();
-    this->close();
+    const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
+        if (widget != nullptr)
+            widget->close();
+    }
 }
 
 void Menu::on_hsitory_clicked()
@@ -62,4 +65,10 @@ void Menu::readyRead()
                                  " History",
                                  displayText.isEmpty() ? "No match has been played" : displayText);
     }
+}
+
+void Menu::on_start_clicked()
+{
+    GamePage *game = new GamePage;
+    game->show();
 }

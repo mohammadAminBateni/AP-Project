@@ -7,9 +7,6 @@
 #include <QString>
 #include <QTimer>
 #include <QUdpSocket>
-#include "forgotpassword.h"
-#include "login.h"
-#include "menu.h"
 #include "ui_mainwindow.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -18,9 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     for (int i = 0; i < 2; ++i) {
         sockets[i] = new QTcpSocket(this);
-        connect(sockets[i], &QTcpSocket::connected, this, &MainWindow::handleTcpConnected);
+        connect(sockets[i], &QTcpSocket::connected, this, &::MainWindow::connectToServer);
         connect(sockets[i], &QTcpSocket::disconnected, this, &MainWindow::handleTcpDisconnected);
-        connect(menu, &Menu::logoutRequest, this, &MainWindow::handleLogout);
     }
     currentServerIp = ui->ip->text();
 }
@@ -54,16 +50,6 @@ void MainWindow::handleTcpDisconnected()
         }
     });
 }
-
-void MainWindow::handleLogout()
-{
-    closeAllChildWindows();
-
-    QSettings settings;
-    settings.remove("session_token");
-    settings.remove("last_login");
-    this->close();
-}
 void MainWindow::closeAllChildWindows()
 {
     const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
@@ -72,12 +58,4 @@ void MainWindow::closeAllChildWindows()
             widget->close();
         }
     }
-}
-QTcpSocket *MainWindow::getSocket1()
-{
-    return sockets[0];
-}
-QTcpSocket *MainWindow::getSocket2()
-{
-    return sockets[1];
 }

@@ -18,14 +18,11 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    QTcpSocket *getSocket1();
-    QTcpSocket *getSocket2();
     void closeAllChildWindows();
 public slots:
     void readyRead();
     void bytesWritten();
     void disconnect();
-    void handleLogout();
     void handleTcpDisconnected();
 
 private:
