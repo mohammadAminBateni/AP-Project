@@ -46,8 +46,14 @@ QString User::getFirstName() const
     return firstName;
 }
 
-QString User::getLastName() const {}
-
+QString User::getLastName() const
+{
+    return lastName;
+}
+QString User::getGmail() const
+{
+    return gmail;
+}
 User::User()
 {
     firstName = "";
