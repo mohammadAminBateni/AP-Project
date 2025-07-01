@@ -57,6 +57,9 @@ private:
     int notChoosingCard = 0;
     QTime inactivityElapsed;
     QTime countdownElapsed;
+    int randNum;
+    bool isMyTurn;
+    int currentRound;
 };
 
 #endif // GAMEPAGE_H

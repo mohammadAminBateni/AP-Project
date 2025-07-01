@@ -245,5 +245,18 @@ void GamePage::readyRead()
         if (res == "NO") {
             QMessageBox::information(this, "Info", "Opponent rejected the card swap.");
         }
+    } else if (response.startsWith("STARTER:")) {
+        QString starterUsername = response.section(':', 1);
+        if (starterUsername == username) {
+            QMessageBox::information(this, "Round Info", "🎮 You start this round.");
+            isMyTurn = true;
+        } else {
+            QMessageBox::information(this, "Round Info", "⏳ Opponent starts this round.");
+            isMyTurn = false;
+        }
+    } else if (response.startsWith("ROUND:")) {
+        int roundNum = response.section(':', 1).toInt();
+        currentRound = roundNum;
+        ui->roundNumber->setText("Round: " + QString::number(currentRound));
     }
 }
