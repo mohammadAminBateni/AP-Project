@@ -1,85 +1,99 @@
-Overview
-Poffer is a multiplayer card game where players compete over 3 rounds to determine the ultimate winner. This project implements a client-server architecture using C++ with QT framework, incorporating concepts like OOP, polymorphism, threads, sockets, and STL.
+# Poffer Card Game
 
-Game Rules:
-Card Types:
-There are 4 card suits:
+## Overview
+Poffer is a strategic multiplayer card game implemented with client-server architecture using C++ and QT framework. Players compete in best-of-3 rounds to determine the winner.
 
-Diamond (highest value)
+## Game Components
 
-Gold
+### Card System
+**Suits (Ranked)**:  
+1. ♦ Diamond (Highest)  
+2. 🏆 Gold  
+3. 💵 Dollar  
+4. 🪙 Coin (Lowest)  
 
-Dollar
+**Card Values (per suit)**:  
+🅱 Bitcoin (Highest) | ♔ King | ♕ Queen | ♗ Soldier | 10 → 2  
 
-Coin (lowest value)
+## Game Rules & Hand Rankings
 
-Each suit contains 13 cards:
+### Pattern Hierarchy (Strongest to Weakest)
 
-Bitcoin (highest)
+#### 10. Golden Hand 🌟
+![goldenHand](./Screenshots/goldenHand.png)
+- **Composition**: Bitcoin + King + Queen + Soldier + 10 (same suit)
+- **Tiebreaker**: Compare suit prestige (♦ > 🏆 > 💵 > 🪙)
+- **Example**: All ♦ cards
 
-King
+#### 9. Order Hand 🔢
+![orderHand](./Screenshots/orderHand.png)
+- **Composition**: 5 sequential same-suit cards
+- **Tiebreaker**: Higher starting value → suit comparison
 
-Queen
+#### 8. 4+1 Hand 🃏
+![4+1hand](./Screenshots/4+1hand.png)
+- **Composition**: Four-of-a-kind + kicker
+- **Tiebreaker**: Compare quadruplet value
 
-Soldier
+#### 7. Penthouse Hand 🏢
+![penthouseHand](./Screenshots/penthouseHand.png)
+- **Composition**: Three-of-a-kind + pair
+- **Tiebreaker**: Triplet value comparison
 
-Number cards (2-10)
+#### 6. MSC Hand (Flush) 💎
+![mscHand](./Screenshots/mscHand.png)
+- **Composition**: 5 non-sequential same-suit cards
+- **Tiebreaker**: Compare cards high-to-low
 
-Gameplay (2-player version):
-The deck is shuffled and each round proceeds as follows:
+#### 5. Series (Straight) 📶
+![seriesHand](./Screenshots/seriesHand.png)
+- **Composition**: 5 sequential mixed-suit cards
+- **Tiebreaker**: Higher starting value
 
-Starting player receives 7 random cards, selects 1, and passes remaining 6 to opponent
+#### 4. 3+2 Hand 🎲
+![3+2hand](./Screenshots/3+2hand.png)
+- **Composition**: Three-of-a-kind + two singles
+- **Tiebreaker**: Triplet value comparison
 
-Opponent selects 1 card from the 6
+#### 3. Double Pair 👥
+![doublePairHand](./Screenshots/doublePairHand.png)
+- **Composition**: Two pairs + kicker
+- **Tiebreaker**: Compare higher pair → lower pair → kicker
 
-This repeats 5 times per round until each player has 5 cards
+#### 2. Single Pair 👤
+![singlePairHand](./Screenshots/singlePairHand.png)
+- **Composition**: One pair + three singles
+- **Tiebreaker**: Pair value → kickers comparison
 
-Players compare their 5-card hands using the ranking patterns
+#### 1. Messy Hand 🌀
+- **Composition**: No valid pattern
+- **Tiebreaker**: High card comparison (value → suit)
 
-First player to win 2 rounds wins the match (maximum 3 rounds)
+## Game Flow
+1. 🔀 Shuffle 52-card deck
+2. 🎴 Starting player: Receives 7 → keeps 1 → passes 6
+3. 🃏 Opponent: Selects 1 from 6
+4. 🔁 Repeat 5x/round → 5 cards each
+5. ⚖ Compare hands using pattern hierarchy
+6. 🏆 First to win 2 rounds wins match (max 3)
 
-Starting Player Determination
-Each player gets one random Diamond card at round start
+## Card Visualizations
 
-Player with higher-value Diamond card starts first
+### Suit Examples
+| ♦ Diamond | 🏆 Gold | 💵 Dollar | 🪙 Coin |
 
-Starting player alternates in subsequent rounds
+| ![Dimond-Soldier](./cards/Dimond-Soldier.JPG) | ![Gold-Soldier](./cards/Gold-Soldier.JPG) | ![Dollar-Soldier](./cards/Dollar-Soldier.JPG) | ![Coin-Soldier](./cards/Coin-Soldier.JPG) |
 
-Special Features
-Card Exchange: Players can request to exchange one card with opponent (disabled in final exchange)
+## Advanced Features
+| Feature | Rules |
+|---------|-------|
+| 🔄 Card Exchange | 1 exchange/round (disabled in final phase) |
+| ⏸️ Pause System | 2 pauses/game (max 20 sec each) |
+| 📶 Disconnection | 60-sec reconnect window |
+| ⏳ Inactivity | 20-sec timer → 10-sec warning → auto-penalty |
 
-Pause/Resume: Each player can pause game twice (max 20 seconds per pause)
-
-Disconnection Handling: 60-second grace period for reconnection
-
-Inactivity: 20-second timer for card selection with 10-second warning
-Game Patterns (Rankings):
-Cards are evaluated based on these patterns from strongest to weakest:
-
-Golden Hand: Bitcoin, King, Queen, Soldier, 10 of same suit
-
-Royal Flush: King, Queen, Soldier, 10, 9 of same suit
-
-Four of a Kind: Four cards of same rank
-
-Full House: Three of a kind + a pair
-
-Flush: Five cards of same suit
-
-Straight: Five consecutive ranked cards
-
-Three of a Kind: Three cards of same rank
-
-Two Pair: Two different pairs
-
-One Pair: One pair of same rank
-
-High Card: Highest single card when no other patterns
-
-Tiebreaker rules:
-
-Compare pattern ranks first
-
-For same patterns, compare card values
-
-If still tied, compare suit hierarchy (Diamond > Gold > Dollar > Coin)
+## Technical Implementation
+- **Architecture**: Client-server model
+- **Framework**: QT 6.5+
+- **Concepts**: OOP, polymorphism, multi-threading, TCP sockets
+- **Data**: STL containers, JSON serialization
