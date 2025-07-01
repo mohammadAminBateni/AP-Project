@@ -24,6 +24,18 @@ void GameSession::start()
     connect(p1, &QTcpSocket::readyRead, this, &GameSession::handleInput);
     connect(p2, &QTcpSocket::readyRead, this, &GameSession::handleInput);
 
+    connect(p1, &QTcpSocket::disconnected, this, [=]()
+            {
+        p2->write("OPPONENT_DISCONNECTED\n");
+        this->deleteLater();
+    });
+
+    connect(p2, &QTcpSocket::disconnected, this, [=]()
+            {
+        p1->write("OPPONENT_DISCONNECTED\n");
+        this->deleteLater();
+    });
+
     p1->write("SELECT_CARD\n");
     p2->write("SELECT_CARD\n");
 }

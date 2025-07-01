@@ -56,6 +56,7 @@ void ClientHandler::processMessage(const QString &message)
             socket->write("LOGIN_FAIL Invalid credentials\n");
         }
     }
+
     else if (message.startsWith("SIGNUP "))
     {
         QStringList parts = message.split(" ");
@@ -82,6 +83,13 @@ void ClientHandler::processMessage(const QString &message)
 
         socket->write("SIGNUP_SUCCESS\n");
     }
+
+    else if (message == "START_GAME")
+    {
+        disconnect(socket, &QTcpSocket::readyRead, this, &ClientHandler::onReadyRead);
+        server->requestGame(socket);
+    }
+
     else
     {
         socket->write("UNKNOWN_COMMAND\n");

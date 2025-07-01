@@ -1,0 +1,3 @@
+ali,rezaei,ali123,1234,09123456789,ali@site.com
+Ali,rezai,ali1,1234,09120000000,ali@example.com
+Reza,Ahmadi,reza2,5678,09121112222,reza@example.com

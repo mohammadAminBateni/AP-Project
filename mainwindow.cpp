@@ -1,17 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QHostAddress>
 #include <QNetworkInterface>
-#include <QDebug>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    QString ip = getLocalIPAddress();
-    qDebug() << "Local IP:" << ip;
-    ui->labelLocalIP->setText("Local IP: " + ip);
+    ui->logBox->setReadOnly(true);
 }
 
 MainWindow::~MainWindow()
@@ -19,22 +17,40 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QString MainWindow::getLocalIPAddress()
+QString MainWindow::getLocalIpAddress()
 {
-    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces())
+    const QList<QHostAddress>& list = QNetworkInterface::allAddresses();
+    for (const QHostAddress& addr : list)
     {
-        if (interface.flags().testFlag(QNetworkInterface::IsUp) &&
-            interface.flags().testFlag(QNetworkInterface::IsRunning) &&
-            !interface.flags().testFlag(QNetworkInterface::IsLoopBack))
+        if (addr.protocol() == QAbstractSocket::IPv4Protocol &&
+            addr != QHostAddress::LocalHost)
         {
-
-            foreach (const QNetworkAddressEntry &entry, interface.addressEntries())
-            {
-                QHostAddress ip = entry.ip();
-                if (ip.protocol() == QAbstractSocket::IPv4Protocol)
-                    return ip.toString();
-            }
+            return addr.toString();
         }
     }
-    return "127.0.0.1";
+    return QHostAddress(QHostAddress::LocalHost).toString();
 }
+
+void MainWindow::log(const QString& message)
+{
+    ui->logBox->append(message);
+}
+
+void MainWindow::on_start_Button_clicked()
+{
+    bool ok;
+    quint16 port = ui->portEdit->text().toUShort(&ok);
+    if (!ok || port == 0)
+    {
+        QMessageBox::warning(this, "Error", "Please enter a valid port number.");
+        return;
+    }
+
+    server = new Server(this);
+    server->startServer(port);
+
+    QString ip = getLocalIpAddress();
+    ui->ipLabel->setText("IP: " + ip);
+    log("Server started on port " + QString::number(port));
+}
+
