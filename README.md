@@ -20,48 +20,47 @@ Poffer is a strategic multiplayer card game implemented with client-server archi
 ### Pattern Hierarchy (Strongest to Weakest)
 
 #### 10. Golden Hand 🌟
-![goldenHand](./Screenshots/goldenHand.png)
 - **Composition**: Bitcoin + King + Queen + Soldier + 10 (same suit)
 - **Tiebreaker**: Compare suit prestige (♦ > 🏆 > 💵 > 🪙)
 - **Example**: All ♦ cards
 
 #### 9. Order Hand 🔢
-![orderHand](./Screenshots/orderHand.png)
+
 - **Composition**: 5 sequential same-suit cards
 - **Tiebreaker**: Higher starting value → suit comparison
 
 #### 8. 4+1 Hand 🃏
-![4+1hand](./Screenshots/4+1hand.png)
+
 - **Composition**: Four-of-a-kind + kicker
 - **Tiebreaker**: Compare quadruplet value
 
 #### 7. Penthouse Hand 🏢
-![penthouseHand](./Screenshots/penthouseHand.png)
+
 - **Composition**: Three-of-a-kind + pair
 - **Tiebreaker**: Triplet value comparison
 
 #### 6. MSC Hand (Flush) 💎
-![mscHand](./Screenshots/mscHand.png)
+
 - **Composition**: 5 non-sequential same-suit cards
 - **Tiebreaker**: Compare cards high-to-low
 
 #### 5. Series (Straight) 📶
-![seriesHand](./Screenshots/seriesHand.png)
+
 - **Composition**: 5 sequential mixed-suit cards
 - **Tiebreaker**: Higher starting value
 
 #### 4. 3+2 Hand 🎲
-![3+2hand](./Screenshots/3+2hand.png)
+
 - **Composition**: Three-of-a-kind + two singles
 - **Tiebreaker**: Triplet value comparison
 
 #### 3. Double Pair 👥
-![doublePairHand](./Screenshots/doublePairHand.png)
+
 - **Composition**: Two pairs + kicker
 - **Tiebreaker**: Compare higher pair → lower pair → kicker
 
 #### 2. Single Pair 👤
-![singlePairHand](./Screenshots/singlePairHand.png)
+
 - **Composition**: One pair + three singles
 - **Tiebreaker**: Pair value → kickers comparison
 
@@ -82,7 +81,6 @@ Poffer is a strategic multiplayer card game implemented with client-server archi
 ### Suit Examples
 | ♦ Diamond | 🏆 Gold | 💵 Dollar | 🪙 Coin |
 
-| ![Dimond-Soldier](./cards/Dimond-Soldier.JPG) | ![Gold-Soldier](./cards/Gold-Soldier.JPG) | ![Dollar-Soldier](./cards/Dollar-Soldier.JPG) | ![Coin-Soldier](./cards/Coin-Soldier.JPG) |
 
 ## Advanced Features
 | Feature | Rules |
