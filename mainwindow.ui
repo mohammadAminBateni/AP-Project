@@ -17,34 +17,45 @@
    <string notr="true">border-image: url(:/new/prefix1/menu.jpg);</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>156</y>
-      <width>481</width>
-      <height>141</height>
+      <x>280</x>
+      <y>150</y>
+      <width>276</width>
+      <height>201</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="ip">
-       <property name="styleSheet">
-        <string notr="true">border-color: rgb(255, 255, 255);</string>
-       </property>
-      </widget>
-     </item>
+    <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Server Ip:</string>
-       </property>
-      </widget>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Server Ip:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="state">
+         <property name="text">
+          <string>connection state</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="ip">
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(255, 255, 255);</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="state">
+     <item row="0" column="1">
+      <widget class="QPushButton" name="connect">
        <property name="text">
-        <string>connection state</string>
+        <string>connect</string>
        </property>
       </widget>
      </item>

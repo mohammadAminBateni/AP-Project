@@ -88,8 +88,9 @@ void EditProfileDialog::on_approve_clicked()
                       + updatedUser.getFirstName() + ":" + updatedUser.getLastName() + ":"
                       + updatedUser.getPhone() + ":" + updatedUser.getGmail() + ":"
                       + updatedUser.getUsername() + ":" + updatedUser.getPassword();
-    socket->write(message.toUtf8());
+    socket->write(message.toUtf8() + "\n");
     file.close();
+    this->close();
     Menu *m = new Menu(nullptr, updatedUser.getUsername(), socket);
     QMessageBox::information(this, "Success", "Profile updated successfully!");
     m->show();

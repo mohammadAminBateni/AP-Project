@@ -22,6 +22,7 @@ public:
                       QTcpSocket *socket1 = nullptr);
     ~GamePage();
     void handleNotChoosingCard();
+    void startChoosingCard();
 signals:
     void updateTimerSignal(QString time);
 public slots:
@@ -36,8 +37,6 @@ private slots:
 
     void on_swap_clicked();
     void handleDisconnection();
-    void startInactivityTimer();
-    void startFinalCountdown();
 
 private:
     Ui::GamePage *ui;

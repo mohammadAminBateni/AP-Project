@@ -25,6 +25,8 @@ private slots:
 
     void on_start_clicked();
 
+    void on_edit_clicked();
+
 private:
     Ui::Menu *ui;
     QString currentUsername;

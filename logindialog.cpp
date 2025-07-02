@@ -79,7 +79,7 @@ void loginDialog::onServerResponse()
 }
 void loginDialog::on_forgotPassword_clicked()
 {
-    forgotPassword fp(this);
-    fp.show();
+    forgotPassword *fp = new forgotPassword(nullptr, socket);
+    fp->show();
     this->close();
 }

@@ -61,7 +61,7 @@ void forgotPassword::on_approve_clicked()
         }
         QString newPasswordHashed = User().hashPassword(ui->newPassword->text());
         QString msg = "PASSWORD_RESET:" + ui->phone->text() + ":" + newPasswordHashed;
-        socket->write(msg.toUtf8());
+        socket->write(msg.toUtf8() + "\n");
 
         QMessageBox::information(this, "Success", "Password updated!");
         this->close();

@@ -73,9 +73,9 @@ void Menu::readyRead()
 void Menu::on_start_clicked()
 {
     QString message = "START_GAME";
-    socket->write(message.toUtf8());
-    GamePage *game = new GamePage(nullptr, currentUsername, socket);
-    game->show();
+    socket->write(message.toUtf8() + "\n");
+    GamePage *g = new GamePage(nullptr, currentUsername, socket);
+    g->show();
     this->close();
 }
 
@@ -83,4 +83,5 @@ void Menu::on_edit_clicked()
 {
     EditProfileDialog *e = new EditProfileDialog(nullptr, socket);
     e->show();
+    this->close();
 }
