@@ -12,6 +12,7 @@ loginDialog::loginDialog(QWidget *parent, QTcpSocket *sock)
     , socket(sock)
 {
     ui->setupUi(this);
+    connect(socket, &QTcpSocket::readyRead, this, &loginDialog::onServerResponse);
 }
 
 loginDialog::~loginDialog()
@@ -56,17 +57,26 @@ void loginDialog::on_approve_clicked()
     f.close();
 
     if (found) {
-        QMessageBox::information(this, "Success", "Login successful!");
         QString message = "LOGIN:" + username + ":" + hashedPassword;
-        socket->write(message.toUtf8());
-        Menu *menu = new Menu(nullptr, username, socket);
-        menu->show();
-        this->close();
-    } else {
-        QMessageBox::warning(this, "Error", "Invalid username or password!");
+        socket->write(message.toUtf8() + "\n");
+        onServerResponse();
     }
 }
+void loginDialog::onServerResponse()
+{
+    {
+        QString response = QString::fromUtf8(socket->readAll()).trimmed();
 
+        if (response == "LOGIN_SUCCESS") {
+            QMessageBox::information(this, "Success", "Login successful!");
+            Menu *menu = new Menu(nullptr, ui->username->text().trimmed(), socket);
+            menu->show();
+            this->close();
+        } else if (response.startsWith("LOGIN_FAIL")) {
+            QMessageBox::warning(this, "Login Failed", "Invalid username or password!");
+        }
+    }
+}
 void loginDialog::on_forgotPassword_clicked()
 {
     forgotPassword fp(this);

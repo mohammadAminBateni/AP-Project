@@ -17,14 +17,14 @@ login::~login()
 
 void login::on_signup_clicked()
 {
-    signupDialog *s = new signupDialog(this, socket);
+    signupDialog *s = new signupDialog(nullptr, socket);
     s->show();
     this->close();
 }
 
 void login::on_login_2_clicked()
 {
-    loginDialog *l = new loginDialog(this, socket);
+    loginDialog *l = new loginDialog(nullptr, socket);
     l->show();
     this->close();
 }

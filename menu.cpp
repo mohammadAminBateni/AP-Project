@@ -1,5 +1,6 @@
 #include "menu.h"
 #include <QMessageBox>
+#include "editprofiledialog.h"
 #include "gamepage.h"
 #include "ui_menu.h"
 Menu::Menu(QWidget *parent, const QString &username, QTcpSocket *socket1)
@@ -71,7 +72,15 @@ void Menu::readyRead()
 
 void Menu::on_start_clicked()
 {
-    GamePage *game = new GamePage(this, currentUsername, socket);
+    QString message = "START_GAME";
+    socket->write(message.toUtf8());
+    GamePage *game = new GamePage(nullptr, currentUsername, socket);
     game->show();
     this->close();
+}
+
+void Menu::on_edit_clicked()
+{
+    EditProfileDialog *e = new EditProfileDialog(nullptr, socket);
+    e->show();
 }

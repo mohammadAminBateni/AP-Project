@@ -25,6 +25,8 @@ public:
     bool checkGmail();
 
     bool checkPassword();
+public slots:
+    void onSignupResponse();
 private slots:
     void on_approve_clicked();
 

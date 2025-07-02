@@ -16,6 +16,8 @@ public:
     explicit loginDialog(QWidget *parent = nullptr, QTcpSocket *socket = nullptr);
     ~loginDialog();
 
+public slots:
+    void onServerResponse();
 private slots:
 
     void on_approve_clicked();

@@ -7,6 +7,7 @@
 #include <QString>
 #include <QTimer>
 #include <QUdpSocket>
+#include "login.h"
 #include "signupdialog.h"
 #include "ui_mainwindow.h"
 MainWindow::MainWindow(QWidget *parent)
@@ -72,8 +73,9 @@ void MainWindow::on_connect_clicked()
         socket->connectToHost(ui->ip->text(), 8080);
         if (socket->waitForConnected()) {
             ui->state->setText("Connected");
-            signupDialog *sd = new signupDialog(this, socket);
-            sd->show();
+            login *l = new login(nullptr, socket);
+            this->hide();
+            l->show();
         } else
             ui->state->setText("Error");
     }

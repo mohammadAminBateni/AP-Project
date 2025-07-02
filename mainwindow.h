@@ -24,11 +24,13 @@ public slots:
     void bytesWritten();
     void handleTcpDisconnected();
 
+private slots:
+    void on_connect_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTcpSocket *socket;
     Menu *menu;
     QString currentServerIp;
-    void connectToServer();
 };
 #endif // MAINWINDOW_H
