@@ -13,7 +13,8 @@ SOURCES += \
     gamesession.cpp \
     main.cpp \
     mainwindow.cpp \
-    server.cpp
+    server.cpp \
+    user.cpp
 
 HEADERS += \
     clienthandler.h \

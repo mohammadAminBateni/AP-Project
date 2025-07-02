@@ -1,4 +1,5 @@
 #include "server.h"
+#include "user.h"
 #include <QDebug>
 #include <QTcpSocket>
 #include "clienthandler.h"
@@ -36,8 +37,9 @@ void Server::loadUsers()
     QTextStream in(&file);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QStringList parts = line.split(',');
-        if (parts.size() == 6) {
+        QStringList parts = line.split("|");
+        if (parts.size() == 6)
+        {
             User user(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
             users[user.username] = user;
         }
@@ -46,15 +48,16 @@ void Server::loadUsers()
     file.close();
 }
 
-void Server::saveUser(const User& user)
+void Server::saveUser( User &user)
 {
+    User u;
     QFile file("users.txt");
     if (!file.open(QIODevice::Append | QIODevice::Text))
         return;
 
     QTextStream out(&file);
-    out << user.name << "," << user.family << "," << user.username << ","
-        << user.password << "," << user.phone << "," << user.email << "\n";
+    out << user.name << "|" << user.family << "|" << user.username << "|"
+        << user.password<< "|" << user.phone << "|" << user.email << "\n";
 
     file.close();
 }
@@ -64,17 +67,17 @@ bool Server::isUsernameTaken(const QString& username)
     return users.contains(username);
 }
 
-void Server::addUser(const User& user)
+void Server::addUser(User& user)
 {
     users[user.username] = user;
     saveUser(user);
 }
-bool Server::validateUser(const QString& username, const QString& password)
+bool Server::validateUser(const QString& username, const QString& password1)
 {
     if (!users.contains(username))
         return false;
 
-    return users[username].password == password;
+    return users[username].password == password1;
 }
 void Server::requestGame(QTcpSocket* player)
 {

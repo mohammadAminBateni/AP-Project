@@ -2,6 +2,7 @@
 #define USER_H
 
 #include <QString>
+#include "QCryptographicHash"
 
 class User
 {
@@ -12,14 +13,12 @@ public:
     QString password;
     QString phone;
     QString email;
-
     User(){}
 
-    User(QString name, QString family, QString username,
-         QString password, QString phone, QString email)
-        : name(name), family(family), username(username),
-        password(password), phone(phone), email(email)
-    {}
+    User(QString name1, QString family1, QString username1,
+         QString password1, QString phone1, QString email1);
+
+    QString hashPassword(const QString &password);
 };
 
 #endif // USER_H

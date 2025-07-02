@@ -56,7 +56,8 @@ SOURCES       = ../../clienthandler.cpp \
 		../../gamesession.cpp \
 		../../main.cpp \
 		../../mainwindow.cpp \
-		../../server.cpp moc_clienthandler.cpp \
+		../../server.cpp \
+		../../user.cpp moc_clienthandler.cpp \
 		moc_gamesession.cpp \
 		moc_mainwindow.cpp \
 		moc_server.cpp
@@ -65,6 +66,7 @@ OBJECTS       = clienthandler.o \
 		main.o \
 		mainwindow.o \
 		server.o \
+		user.o \
 		moc_clienthandler.o \
 		moc_gamesession.o \
 		moc_mainwindow.o \
@@ -147,7 +149,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt6/mkspecs/features/spec_pre.prf \
 		../../gamesession.cpp \
 		../../main.cpp \
 		../../mainwindow.cpp \
-		../../server.cpp
+		../../server.cpp \
+		../../user.cpp
 QMAKE_TARGET  = Server1
 DESTDIR       = 
 TARGET        = Server1
@@ -326,7 +329,7 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt6/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../../clienthandler.h ../../gamesession.h ../../mainwindow.h ../../server.h ../../user.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../../clienthandler.cpp ../../gamesession.cpp ../../main.cpp ../../mainwindow.cpp ../../server.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../../clienthandler.cpp ../../gamesession.cpp ../../main.cpp ../../mainwindow.cpp ../../server.cpp ../../user.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../../mainwindow.ui $(DISTDIR)/
 
 
@@ -432,6 +435,9 @@ server.o: ../../server.cpp ../../server.h \
 		../../clienthandler.h \
 		../../gamesession.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o server.o ../../server.cpp
+
+user.o: ../../user.cpp ../../user.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o user.o ../../user.cpp
 
 moc_clienthandler.o: moc_clienthandler.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_clienthandler.o moc_clienthandler.cpp

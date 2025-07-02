@@ -18,9 +18,9 @@ class Server : public QTcpServer
 public:
 
     void loadUsers();
-    void saveUser(const User& user);
+    void saveUser(User &user);
     bool isUsernameTaken(const QString& username);
-    void addUser(const User& user);
+    void addUser(User &user);
     explicit Server(QObject *parent = nullptr);
     void startServer(quint16 port = 1234);
     bool validateUser(const QString& username, const QString& password);
