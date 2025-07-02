@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     socket = new QTcpSocket(this);
-    connect(socket, &QTcpSocket::connected, this, &::MainWindow::connectToServer);
+    connect(socket, &QTcpSocket::connected, this, &::MainWindow::on_connect_clicked);
     connect(socket, &QTcpSocket::disconnected, this, &MainWindow::handleTcpDisconnected);
 
     currentServerIp = ui->ip->text();
@@ -25,18 +25,18 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-void MainWindow::connectToServer()
-{
-    if (socket->state() != QAbstractSocket::ConnectedState) {
-        socket->connectToHost(ui->ip->text(), 8080);
-        if (socket->waitForConnected()) {
-            ui->state->setText("Connected");
-            signupDialog *sd = new signupDialog(this,socket);
-            sd->show();
-        } else
-            ui->state->setText("Error");
-    }
-}
+// void MainWindow::connectToServer()
+// {
+//     if (socket->state() != QAbstractSocket::ConnectedState) {
+//         socket->connectToHost(ui->ip->text(), 8080);
+//         if (socket->waitForConnected()) {
+//             ui->state->setText("Connected");
+//             signupDialog *sd = new signupDialog(this,socket);
+//             sd->show();
+//         } else
+//             ui->state->setText("Error");
+//     }
+// }
 void MainWindow::readyRead() {}
 
 void MainWindow::bytesWritten() {}
@@ -58,5 +58,23 @@ void MainWindow::closeAllChildWindows()
         if (widget != this) {
             widget->close();
         }
+    }
+}
+
+void MainWindow::on_connect_clicked()
+{
+    if (ui->ip->text().trimmed().isEmpty()) {
+        ui->state->setText("Please enter server IP");
+        return;
+    }
+
+    if (socket->state() != QAbstractSocket::ConnectedState) {
+        socket->connectToHost(ui->ip->text(), 8080);
+        if (socket->waitForConnected()) {
+            ui->state->setText("Connected");
+            signupDialog *sd = new signupDialog(this, socket);
+            sd->show();
+        } else
+            ui->state->setText("Error");
     }
 }
