@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "qtcpsocket.h"
+#include "user.h"
 
 namespace Ui {
 class EditProfileDialog;
@@ -18,10 +19,12 @@ public:
 
 private slots:
     void on_approve_clicked();
+    void readyRead();
 
 private:
     Ui::EditProfileDialog *ui;
     QTcpSocket *socket;
+    User updatedUser;
 };
 
 #endif // EDITPROFILEDIALOG_H
