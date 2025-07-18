@@ -81,7 +81,7 @@ void Menu::on_start_clicked()
 
 void Menu::on_edit_clicked()
 {
-    EditProfileDialog *e = new EditProfileDialog(nullptr, socket);
+    EditProfileDialog *e = new EditProfileDialog(nullptr, socket, currentUsername);
     e->show();
     this->close();
 }

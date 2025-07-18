@@ -108,8 +108,9 @@ QTextStream &operator>>(QTextStream &in, User &u)
 
 User::User(QString username, QString password)
 {
-    username = this->username;
-    password = this->password;
+    this->username = username;
+    this->password = password;
+    userCount++;
 }
 QString User::getPassword()
 {
